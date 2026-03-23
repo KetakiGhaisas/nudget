@@ -1,0 +1,13 @@
+# API keys — never commit
+js/config.js
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# editor
+.vscode/
+.idea/
+
+# node (if you add a build step later)
+node_modules/

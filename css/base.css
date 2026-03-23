@@ -1,0 +1,273 @@
+/* ═══════════════════════════════════════════════════
+   NUDGET — BASE STYLES
+   Reset, app shell layout, topbar, nav, FAB, toast
+═══════════════════════════════════════════════════ */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html { height: 100%; font-size: 16px; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  min-height: 100vh;
+  overflow: hidden;
+  position: relative;
+  transition: background 0.5s, color 0.5s;
+}
+
+/* Scanlines overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1000;
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    var(--scanline) 2px,
+    var(--scanline) 3px
+  );
+}
+
+/* ── Background pixel stars ── */
+.pixel-stars {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+.pstar {
+  position: absolute;
+  font-size: 8px;
+  opacity: 0;
+  color: var(--p1);
+  animation: starFloat linear infinite;
+  user-select: none;
+}
+@keyframes starFloat {
+  0%   { opacity: 0; transform: translateY(0) scale(0.7); }
+  10%  { opacity: 0.25; }
+  90%  { opacity: 0.25; }
+  100% { opacity: 0; transform: translateY(-60px) scale(1); }
+}
+
+/* ── App shell ── */
+#app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  max-width: 420px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Top bar ── */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+.topbar-logo {
+  font-family: var(--font-pixel);
+  font-size: 9px;
+  color: var(--p1);
+  letter-spacing: 0.05em;
+  text-shadow: 1px 1px 0 var(--p2);
+}
+.topbar-logo .logo-star { color: var(--a1); }
+
+.topbar-right {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* ── Icon buttons ── */
+.icon-btn {
+  height: 32px;
+  min-width: 32px;
+  padding: 0 8px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text2);
+  cursor: pointer;
+  font-size: 14px;
+  font-family: var(--font-pixel);
+  letter-spacing: 0.04em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.15s, color 0.15s;
+}
+.icon-btn:hover { border-color: var(--p1); color: var(--p1); }
+.icon-btn.small { font-size: 6px; height: 28px; }
+
+/* ── Screen container ── */
+.screen-container {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+.screen {
+  display: none;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+  padding-bottom: 80px;
+}
+.screen.active { display: flex; }
+
+.screen::-webkit-scrollbar { width: 3px; }
+.screen::-webkit-scrollbar-track { background: transparent; }
+.screen::-webkit-scrollbar-thumb { background: var(--p2); }
+
+/* ── Bottom nav ── */
+.bottom-nav {
+  display: flex;
+  background: var(--bg2);
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+.nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 2px 8px;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  color: var(--text3);
+  font-family: var(--font-pixel);
+  font-size: 5px;
+  letter-spacing: 0.04em;
+  gap: 3px;
+  transition: color 0.15s;
+  position: relative;
+}
+
+.nav-icon-img {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+}
+
+/* Nav icon images — use asset PNGs.
+   If image fails to load, the nav label still shows. */
+.nav-icon-img img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  /* tint to current nav color via CSS filter
+     (works for white/light-colored PNG icons) */
+  filter: brightness(0) saturate(100%) invert(40%);
+  transition: filter 0.15s;
+}
+
+.nav-item.active {
+  color: var(--p1);
+}
+
+.nav-item.active .nav-icon-img img {
+  /* active: tint to --p1 equivalent (override per theme if needed) */
+  filter: brightness(0) saturate(100%) invert(50%) sepia(100%) saturate(500%) hue-rotate(230deg);
+}
+
+.nav-item.active::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 20%;
+  right: 20%;
+  height: 2px;
+  background: var(--p1);
+}
+
+/* ── FAB ── */
+.fab {
+  position: fixed;
+  bottom: 68px;
+  left: 50%;
+  transform: translateX(calc(-50% + 0px));
+  width: 50px;
+  height: 50px;
+  background: var(--a1);
+  border: none;
+  color: var(--bg);
+  font-size: 26px;
+  font-weight: 300;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 3px 3px 0 var(--p2);
+  z-index: 50;
+  transition: transform 0.15s, box-shadow 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Use custom image if available */
+  background-image: url('../assets/icons/fab-icon.png');
+  background-size: 28px 28px;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+.fab:hover {
+  transform: translateX(calc(-50% + 0px)) translate(-2px,-2px);
+  box-shadow: 5px 5px 0 var(--p2);
+}
+.fab:active {
+  transform: translateX(calc(-50% + 0px)) translate(1px,1px);
+  box-shadow: 1px 1px 0 var(--p2);
+}
+/* If no background image set, show the + character */
+.fab-label { pointer-events: none; }
+
+/* ── Toast ── */
+.toast {
+  position: fixed;
+  bottom: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--g1);
+  color: var(--bg);
+  font-family: var(--font-pixel);
+  font-size: 7px;
+  padding: 10px 18px;
+  white-space: nowrap;
+  box-shadow: 3px 3px 0 var(--g2);
+  z-index: 999;
+  letter-spacing: 0.05em;
+  transition: bottom 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.toast.show { bottom: 90px; }
+
+/* ── Animations ── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes blink {
+  0%, 100% { opacity: 0.5; }
+  50%       { opacity: 0.1; }
+}

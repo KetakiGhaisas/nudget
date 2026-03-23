@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>nudget</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  <!-- App icon (put your asset here) -->
+  <link rel="icon" type="image/png" href="assets/icons/icon-32.png" />
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/themes.css" />
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <link rel="stylesheet" href="css/screens.css" />
+  <link rel="stylesheet" href="css/overlays.css" />
+</head>
+<body>
+
+<!-- ════════════════════════════════════
+     BACKGROUND STARS (injected by JS)
+════════════════════════════════════ -->
+<div class="pixel-stars" id="stars"></div>
+
+<!-- ════════════════════════════════════
+     APP SHELL
+════════════════════════════════════ -->
+<div id="app">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="topbar-logo">
+      nudget<span class="logo-star">&#10022;</span>
+    </div>
+    <div class="topbar-right">
+      <button class="icon-btn" id="btn-capture" title="AI Capture">&#10022;</button>
+      <button class="icon-btn" id="btn-theme" title="Themes">&#9672;</button>
+    </div>
+  </div>
+
+  <!-- SCREEN CONTAINER -->
+  <div class="screen-container">
+
+    <!-- TODAY -->
+    <div class="screen active" id="screen-today">
+      <div class="morning-card">
+        <div class="morning-greeting">GOOD MORNING &#10022;</div>
+        <div class="morning-sub" id="morning-message">Here's your day. Breathe easy.</div>
+        <div class="morning-stats">
+          <div class="morning-stat">
+            <span class="morning-stat-val" id="stat-today">0</span>
+            <span class="morning-stat-label">tasks today</span>
+          </div>
+          <div class="morning-stat">
+            <span class="morning-stat-val" id="stat-habits">0</span>
+            <span class="morning-stat-label">habits due</span>
+          </div>
+          <div class="morning-stat">
+            <span class="morning-stat-val" id="stat-events">0</span>
+            <span class="morning-stat-label">events</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Frequency nudges -->
+      <div id="nudge-container"></div>
+
+      <!-- AI morning briefing -->
+      <div class="ai-suggest-card" id="ai-briefing-card" style="display:none;">
+        <div class="ai-suggest-header">&#10022; AI MORNING BRIEFING</div>
+        <div id="ai-briefing-list"></div>
+      </div>
+
+      <div class="section-header">
+        <div class="section-title">NEXT ACTIONS</div>
+        <div class="section-count" id="today-task-count">0</div>
+      </div>
+      <div id="today-tasks"></div>
+
+      <div class="px-divider">
+        <div class="px-line"></div><div class="px-dot">&#9670;</div><div class="px-line"></div>
+      </div>
+
+      <div class="section-header">
+        <div class="section-title">UPCOMING EVENTS</div>
+      </div>
+      <div id="today-events"></div>
+    </div>
+
+    <!-- INBOX -->
+    <div class="screen" id="screen-inbox">
+      <div class="section-header">
+        <div class="section-title">GTD INBOX</div>
+        <div class="section-count" id="inbox-count">0</div>
+      </div>
+      <div class="gtd-state-filter" id="stateFilter">
+        <button class="state-btn active" data-state="all">ALL</button>
+        <button class="state-btn" data-state="inbox">INBOX</button>
+        <button class="state-btn" data-state="next">NEXT ACTION</button>
+        <button class="state-btn" data-state="waiting">WAITING FOR</button>
+        <button class="state-btn" data-state="someday">SOMEDAY</button>
+        <button class="state-btn" data-state="reference">REFERENCE</button>
+        <button class="state-btn" data-state="done">DONE</button>
+      </div>
+      <div id="inbox-tasks"></div>
+    </div>
+
+    <!-- HABITS -->
+    <div class="screen" id="screen-habits">
+      <div class="section-header">
+        <div class="section-title">HABIT TRACKER</div>
+        <div class="section-count" id="habit-screen-count">0</div>
+      </div>
+      <div class="habit-grid-header">
+        <div style="flex:0 0 130px;"></div>
+        <div class="day-label">M</div>
+        <div class="day-label">T</div>
+        <div class="day-label">W</div>
+        <div class="day-label">T</div>
+        <div class="day-label">F</div>
+        <div class="day-label">S</div>
+        <div class="day-label">S</div>
+      </div>
+      <div id="habit-list"></div>
+      <div class="px-divider">
+        <div class="px-line"></div><div class="px-dot">&#9670;</div><div class="px-line"></div>
+      </div>
+      <div class="section-header" style="padding-top:4px;">
+        <div class="section-title">STREAKS</div>
+      </div>
+      <div id="streak-summary"></div>
+    </div>
+
+    <!-- PROJECTS -->
+    <div class="screen" id="screen-projects">
+      <div class="section-header">
+        <div class="section-title">AREAS &amp; PROJECTS</div>
+        <button class="icon-btn small" id="btn-add-area">+ AREA</button>
+      </div>
+      <div id="areas-list"></div>
+    </div>
+
+    <!-- CALENDAR -->
+    <div class="screen" id="screen-calendar">
+      <div class="cal-header">
+        <button class="cal-nav-btn" id="cal-prev">&#9664;</button>
+        <div class="cal-month" id="cal-month-label">MARCH 2026</div>
+        <button class="cal-nav-btn" id="cal-next">&#9654;</button>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+      <div class="px-divider" style="margin-top:6px;">
+        <div class="px-line"></div><div class="px-dot">&#9670;</div><div class="px-line"></div>
+      </div>
+      <div class="cal-day-view">
+        <div class="cal-day-title" id="cal-day-title">TODAY</div>
+        <div id="cal-day-events"></div>
+      </div>
+    </div>
+
+    <!-- SCRATCH PAD -->
+    <div class="screen" id="screen-scratch">
+      <div class="scratch-date" id="scratch-date-label"></div>
+      <div class="scratch-input-wrap">
+        <input class="scratch-input" id="scratchInput" placeholder="quick task... (press enter)" />
+        <button class="scratch-add-btn" id="btn-scratch-add">ADD</button>
+      </div>
+      <div id="scratch-list"></div>
+      <div class="px-divider">
+        <div class="px-line"></div><div class="px-dot">&#9670;</div><div class="px-line"></div>
+      </div>
+      <div class="section-header" style="padding-top:4px;">
+        <div class="section-title">PAST LOGS</div>
+      </div>
+      <div id="scratch-log-list"></div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div class="screen" id="screen-dash">
+      <div class="section-header">
+        <div class="section-title">DASHBOARD</div>
+        <div class="section-count">this week</div>
+      </div>
+      <div class="dash-grid">
+        <div class="dash-stat">
+          <span class="dash-stat-val" id="dash-completed">0</span>
+          <div class="dash-stat-label">completed</div>
+        </div>
+        <div class="dash-stat accent-a">
+          <span class="dash-stat-val" id="dash-inbox">0</span>
+          <div class="dash-stat-label">in inbox</div>
+        </div>
+        <div class="dash-stat accent-g">
+          <span class="dash-stat-val" id="dash-streak">0</span>
+          <div class="dash-stat-label">best streak</div>
+        </div>
+        <div class="dash-stat accent-y">
+          <span class="dash-stat-val" id="dash-waiting">0</span>
+          <div class="dash-stat-label">waiting for</div>
+        </div>
+      </div>
+      <div class="chart-wrap">
+        <div class="chart-title">TASK COMPLETION &mdash; LAST 7 DAYS</div>
+        <div class="bar-chart" id="completion-chart"></div>
+      </div>
+      <div class="chart-wrap">
+        <div class="chart-title">HABIT CONSISTENCY &mdash; THIS WEEK</div>
+        <div id="habit-consistency-chart"></div>
+      </div>
+      <div class="gtd-funnel">
+        <div class="gtd-funnel-title">GTD PIPELINE HEALTH</div>
+        <div id="gtd-funnel-rows"></div>
+      </div>
+    </div>
+
+  </div><!-- /screen-container -->
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <button class="nav-item active" data-screen="today">
+      <span class="nav-icon-img">
+        <img src="assets/icons/nav-today.png" alt="" />
+      </span>
+      <span>TODAY</span>
+    </button>
+    <button class="nav-item" data-screen="inbox">
+      <span class="nav-icon-img">
+        <img src="assets/icons/nav-inbox.png" alt="" />
+      </span>
+      <span>INBOX</span>
+    </button>
+    <button class="nav-item" data-screen="habits">
+      <span class="nav-icon-img">
+        <img src="assets/icons/nav-habits.png" alt="" />
+      </span>
+      <span>HABITS</span>
+    </button>
+    <button class="nav-item" data-screen="projects">
+      <span class="nav-icon-img">
+        <img src="assets/icons/nav-projects.png" alt="" />
+      </span>
+      <span>PROJECTS</span>
+    </button>
+    <button class="nav-item" data-screen="calendar">
+      <span class="nav-icon-img">
+        <img src="assets/icons/nav-calendar.png" alt="" />
+      </span>
+      <span>CAL</span>
+    </button>
+    <button class="nav-item" data-screen="scratch">
+      <span class="nav-icon-img">
+        <img src="assets/icons/nav-scratch.png" alt="" />
+      </span>
+      <span>SCRATCH</span>
+    </button>
+    <button class="nav-item" data-screen="dash">
+      <span class="nav-icon-img">
+        <img src="assets/icons/nav-dash.png" alt="" />
+      </span>
+      <span>DASH</span>
+    </button>
+  </nav>
+
+</div><!-- /app -->
+
+<!-- FAB -->
+<button class="fab" id="fab">+</button>
+
+<!-- ════════════════════════════════════
+     OVERLAYS
+════════════════════════════════════ -->
+
+<!-- AI Capture -->
+<div class="overlay" id="ai-overlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <div class="sheet-title">&#10022; AI CAPTURE</div>
+      <button class="sheet-close" data-close="ai-overlay">&#10005;</button>
+    </div>
+    <div class="sheet-body">
+      <div class="ai-chat-messages" id="ai-messages">
+        <div class="ai-msg ai">Hey! Tell me what's on your mind &mdash; I'll handle the structure. Type anything naturally.</div>
+      </div>
+      <div class="ai-input-row">
+        <input class="ai-text-input" id="aiInput" placeholder="e.g. 'prep for capstone tomorrow'..." />
+        <button class="ai-send-btn" id="btn-ai-send">SEND</button>
+      </div>
+      <div class="ai-parsed-preview" id="aiParsed" style="display:none;">
+        <div class="ai-parsed-label">&#10022; PARSED TASK</div>
+        <div id="aiParsedContent"></div>
+        <div class="btn-row" style="margin-top:10px;">
+          <button class="btn-primary" id="btn-confirm-ai">CONFIRM &amp; ADD</button>
+          <button class="btn-secondary" id="btn-edit-ai">EDIT</button>
+        </div>
+      </div>
+      <div class="ai-error" id="ai-error" style="display:none;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Add / Edit Task -->
+<div class="overlay" id="task-overlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <div class="sheet-title" id="task-sheet-title">ADD TASK</div>
+      <button class="sheet-close" data-close="task-overlay">&#10005;</button>
+    </div>
+    <div class="sheet-body">
+      <div class="field">
+        <label class="field-label">TASK TITLE</label>
+        <input class="field-input" id="task-title" placeholder="what needs to get done?" />
+      </div>
+      <div class="field">
+        <label class="field-label">GTD STATE</label>
+        <div class="state-selector" id="gtdStateSelector">
+          <button class="state-option selected" data-s="inbox">INBOX</button>
+          <button class="state-option" data-s="next">NEXT ACTION</button>
+          <button class="state-option" data-s="waiting">WAITING FOR</button>
+          <button class="state-option" data-s="someday">SOMEDAY</button>
+          <button class="state-option" data-s="reference">REFERENCE</button>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">ENERGY REQUIRED</label>
+        <div class="energy-selector" id="energySelector">
+          <button class="energy-option" data-e="low">LOW</button>
+          <button class="energy-option selected" data-e="med">MEDIUM</button>
+          <button class="energy-option" data-e="high">HIGH</button>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <div class="field" style="flex:1;">
+          <label class="field-label">DUE DATE</label>
+          <input class="field-input" id="task-due" type="date" />
+        </div>
+        <div class="field" style="flex:1;">
+          <label class="field-label">PROJECT</label>
+          <select class="field-select" id="task-project">
+            <option value="">none</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">PROGRESS TRACKING</label>
+        <select class="field-select" id="progress-type">
+          <option value="binary">Binary (done / not done)</option>
+          <option value="percent">Percentage (0&ndash;100%)</option>
+          <option value="numeric">Numeric target</option>
+        </select>
+      </div>
+      <div class="field" id="progress-numeric-wrap" style="display:none;">
+        <div style="display:flex;gap:8px;">
+          <input class="field-input" id="progress-target" type="number" placeholder="target (e.g. 8)" style="flex:1;" />
+          <input class="field-input" id="progress-unit" placeholder="unit (e.g. glasses)" style="flex:1;" />
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">RECURRENCE</label>
+        <select class="field-select" id="task-recur">
+          <option value="">none</option>
+          <option value="FREQ=DAILY">daily</option>
+          <option value="FREQ=WEEKLY">weekly</option>
+          <option value="FREQ=WEEKLY;BYDAY=MO,WE,FR">Mon / Wed / Fri</option>
+          <option value="FREQ=MONTHLY">monthly</option>
+          <option value="__freq__">soft frequency (no hard deadline)</option>
+        </select>
+      </div>
+      <div class="field" id="freq-days-wrap" style="display:none;">
+        <label class="field-label">TARGET FREQUENCY (days)</label>
+        <input class="field-input" id="freq-days" type="number" placeholder="e.g. 14 = every 2 weeks" />
+      </div>
+      <div class="field">
+        <label class="field-label">NOTES</label>
+        <textarea class="field-textarea" id="task-notes" placeholder="any context..."></textarea>
+      </div>
+      <div class="btn-row">
+        <button class="btn-primary" id="btn-save-task">SAVE TASK &#10022;</button>
+        <button class="btn-secondary" data-close="task-overlay">CANCEL</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Habit -->
+<div class="overlay" id="habit-overlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <div class="sheet-title">ADD HABIT</div>
+      <button class="sheet-close" data-close="habit-overlay">&#10005;</button>
+    </div>
+    <div class="sheet-body">
+      <div class="field">
+        <label class="field-label">HABIT NAME</label>
+        <input class="field-input" id="habit-name" placeholder="e.g. drink water, read 10 mins..." />
+      </div>
+      <div class="field">
+        <label class="field-label">ICON (upload to assets/icons/habits/ then enter filename)</label>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input class="field-input" id="habit-icon" placeholder="e.g. water.png" style="flex:1;" />
+          <div class="habit-icon-preview" id="habit-icon-preview">?</div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">NUMERIC TARGET (optional)</label>
+        <div style="display:flex;gap:8px;">
+          <input class="field-input" id="habit-target" type="number" placeholder="e.g. 8" style="flex:1;" />
+          <input class="field-input" id="habit-unit" placeholder="e.g. glasses" style="flex:1;" />
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">RECURRENCE</label>
+        <select class="field-select" id="habit-recur">
+          <option value="FREQ=DAILY">every day</option>
+          <option value="FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR">weekdays only</option>
+          <option value="FREQ=WEEKLY;BYDAY=MO,WE,FR">Mon / Wed / Fri</option>
+          <option value="FREQ=WEEKLY">once a week</option>
+        </select>
+      </div>
+      <div class="btn-row">
+        <button class="btn-primary" id="btn-save-habit">SAVE HABIT &#10022;</button>
+        <button class="btn-secondary" data-close="habit-overlay">CANCEL</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Event -->
+<div class="overlay" id="event-overlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <div class="sheet-title">ADD EVENT</div>
+      <button class="sheet-close" data-close="event-overlay">&#10005;</button>
+    </div>
+    <div class="sheet-body">
+      <div class="field">
+        <label class="field-label">EVENT NAME</label>
+        <input class="field-input" id="event-name" placeholder="e.g. Passport renewal, Birthday..." />
+      </div>
+      <div style="display:flex;gap:10px;">
+        <div class="field" style="flex:1;">
+          <label class="field-label">DATE</label>
+          <input class="field-input" id="event-date" type="date" />
+        </div>
+        <div class="field" style="flex:1;">
+          <label class="field-label">TYPE</label>
+          <select class="field-select" id="event-type">
+            <option value="birthday">Birthday</option>
+            <option value="anniversary">Anniversary</option>
+            <option value="deadline">Deadline</option>
+            <option value="reminder">Long-term reminder</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">REMINDER (days before)</label>
+        <input class="field-input" id="event-offset" type="number" value="7" />
+      </div>
+      <div class="field">
+        <label class="field-label">NOTES</label>
+        <textarea class="field-textarea" id="event-notes" placeholder="any notes..."></textarea>
+      </div>
+      <div class="btn-row">
+        <button class="btn-primary" id="btn-save-event">SAVE EVENT &#10022;</button>
+        <button class="btn-secondary" data-close="event-overlay">CANCEL</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Area -->
+<div class="overlay" id="area-overlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <div class="sheet-title">ADD AREA</div>
+      <button class="sheet-close" data-close="area-overlay">&#10005;</button>
+    </div>
+    <div class="sheet-body">
+      <div class="field">
+        <label class="field-label">AREA NAME</label>
+        <input class="field-input" id="area-name" placeholder="e.g. Work, Personal, Health..." />
+      </div>
+      <div class="field">
+        <label class="field-label">ADD FIRST PROJECT</label>
+        <input class="field-input" id="area-project" placeholder="e.g. Capstone, Side project..." />
+      </div>
+      <div class="btn-row">
+        <button class="btn-primary" id="btn-save-area">SAVE AREA &#10022;</button>
+        <button class="btn-secondary" data-close="area-overlay">CANCEL</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Theme Picker -->
+<div class="overlay" id="theme-overlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <div class="sheet-title">COLOUR THEMES</div>
+      <button class="sheet-close" data-close="theme-overlay">&#10005;</button>
+    </div>
+    <div class="sheet-body" style="padding:8px 4px;">
+      <div class="theme-grid" id="themeGrid">
+        <div class="theme-tile active" data-theme="">
+          <div class="theme-swatches">
+            <div class="swatch" style="background:#0d0520;"></div>
+            <div class="swatch" style="background:#b06aff;"></div>
+            <div class="swatch" style="background:#ff6eb4;"></div>
+            <div class="swatch" style="background:#39ff9f;"></div>
+          </div>
+          <div class="theme-name">PURPLE HAZE</div>
+          <div class="theme-sub">default &middot; dark</div>
+        </div>
+        <div class="theme-tile" data-theme="bubblegum">
+          <div class="theme-swatches">
+            <div class="swatch" style="background:#1f0815;"></div>
+            <div class="swatch" style="background:#ff3fa4;"></div>
+            <div class="swatch" style="background:#ffb3e6;"></div>
+            <div class="swatch" style="background:#fffacd;"></div>
+          </div>
+          <div class="theme-name">BUBBLEGUM</div>
+          <div class="theme-sub">vivid &middot; dark</div>
+        </div>
+        <div class="theme-tile" data-theme="matrix">
+          <div class="theme-swatches">
+            <div class="swatch" style="background:#021a0d;"></div>
+            <div class="swatch" style="background:#00ff88;"></div>
+            <div class="swatch" style="background:#7dff4f;"></div>
+            <div class="swatch" style="background:#eaffb3;"></div>
+          </div>
+          <div class="theme-name">MATRIX</div>
+          <div class="theme-sub">cyber &middot; dark</div>
+        </div>
+        <div class="theme-tile" data-theme="deepspace">
+          <div class="theme-swatches">
+            <div class="swatch" style="background:#040e2a;"></div>
+            <div class="swatch" style="background:#4d8fff;"></div>
+            <div class="swatch" style="background:#00cfff;"></div>
+            <div class="swatch" style="background:#e0f0ff;"></div>
+          </div>
+          <div class="theme-name">DEEP SPACE</div>
+          <div class="theme-sub">electric &middot; dark</div>
+        </div>
+        <div class="theme-tile" data-theme="ember">
+          <div class="theme-swatches">
+            <div class="swatch" style="background:#1a0505;"></div>
+            <div class="swatch" style="background:#ff3d3d;"></div>
+            <div class="swatch" style="background:#ff8c69;"></div>
+            <div class="swatch" style="background:#fff0d0;"></div>
+          </div>
+          <div class="theme-name">EMBER</div>
+          <div class="theme-sub">warm &middot; dark</div>
+        </div>
+        <div class="theme-tile" data-theme="mint">
+          <div class="theme-swatches">
+            <div class="swatch" style="background:#f0faf6;"></div>
+            <div class="swatch" style="background:#00b37e;"></div>
+            <div class="swatch" style="background:#ff6f91;"></div>
+            <div class="swatch" style="background:#2d2d2d;"></div>
+          </div>
+          <div class="theme-name">MINT LIGHT</div>
+          <div class="theme-sub">clean &middot; light</div>
+        </div>
+        <div class="theme-tile" data-theme="goldhour">
+          <div class="theme-swatches">
+            <div class="swatch" style="background:#120d00;"></div>
+            <div class="swatch" style="background:#ffb800;"></div>
+            <div class="swatch" style="background:#ff8c00;"></div>
+            <div class="swatch" style="background:#fff8e7;"></div>
+          </div>
+          <div class="theme-name">GOLDEN HOUR</div>
+          <div class="theme-sub">warm &middot; dark</div>
+        </div>
+        <div class="theme-tile kawaii-tile" data-theme="kawaii">
+          <div class="theme-kawaii-inner">
+            <img src="assets/kawaii/theme-preview.png" alt="kawaii" class="kawaii-preview-img" onerror="this.style.display='none'" />
+            <div class="theme-name">KAWAII</div>
+            <div class="theme-sub">upload assets to unlock</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Task Detail (full screen) -->
+<div class="detail-overlay" id="task-detail">
+  <div class="detail-topbar">
+    <button class="detail-back" id="btn-detail-back">&#8592; BACK</button>
+    <div class="detail-title">TASK DETAIL</div>
+    <button class="icon-btn small" id="btn-detail-edit">EDIT</button>
+  </div>
+  <div class="detail-body" id="detail-body"></div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- JS modules -->
+<script src="js/store.js"></script>
+<script src="js/ai.js"></script>
+<script src="js/render.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

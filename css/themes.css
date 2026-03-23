@@ -1,0 +1,165 @@
+/* ═══════════════════════════════════════════════════
+   NUDGET — THEME DEFINITIONS
+   Each theme is a [data-theme="..."] attribute on <html>
+   Default (no attribute) = Purple Haze
+═══════════════════════════════════════════════════ */
+
+:root {
+  /* ── Purple Haze (default) ── */
+  --bg:      #0d0520;
+  --bg2:     #1a0a2e;
+  --bg3:     #2d1060;
+  --surface: #1e0d3a;
+  --border:  rgba(176,106,255,0.2);
+  --p1:      #b06aff;
+  --p2:      #7b2fff;
+  --a1:      #ff6eb4;
+  --a2:      #ffb3d9;
+  --g1:      #39ff9f;
+  --g2:      #00c96b;
+  --y:       #ffe566;
+  --text:    #fff8ff;
+  --text2:   rgba(255,248,255,0.6);
+  --text3:   rgba(255,248,255,0.35);
+  --scanline: rgba(0,0,0,0.12);
+
+  --font-pixel: 'Press Start 2P', monospace;
+  --font-vt:    'VT323', monospace;
+  --font-sans:  'DM Sans', sans-serif;
+}
+
+[data-theme="bubblegum"] {
+  --bg:      #1f0815;
+  --bg2:     #2e0f22;
+  --bg3:     #3a0d28;
+  --surface: #2a0c1e;
+  --border:  rgba(255,63,164,0.2);
+  --p1:      #ff3fa4;
+  --p2:      #c0186b;
+  --a1:      #ffb3e6;
+  --a2:      #ff80d5;
+  --g1:      #ff3fa4;
+  --g2:      #c0186b;
+  --y:       #fffacd;
+  --text:    #fff0fa;
+  --text2:   rgba(255,240,250,0.6);
+  --text3:   rgba(255,240,250,0.3);
+  --scanline: rgba(0,0,0,0.12);
+}
+
+[data-theme="matrix"] {
+  --bg:      #021a0d;
+  --bg2:     #032e18;
+  --bg3:     #044a26;
+  --surface: #021f10;
+  --border:  rgba(0,255,136,0.2);
+  --p1:      #00ff88;
+  --p2:      #007a40;
+  --a1:      #7dff4f;
+  --a2:      #39ffb2;
+  --g1:      #00ff88;
+  --g2:      #007a40;
+  --y:       #eaffb3;
+  --text:    #f0fff4;
+  --text2:   rgba(240,255,244,0.6);
+  --text3:   rgba(240,255,244,0.3);
+  --scanline: rgba(0,0,0,0.14);
+}
+
+[data-theme="deepspace"] {
+  --bg:      #040e2a;
+  --bg2:     #091a44;
+  --bg3:     #0e2a60;
+  --surface: #060f30;
+  --border:  rgba(77,143,255,0.2);
+  --p1:      #4d8fff;
+  --p2:      #1a4fa0;
+  --a1:      #00cfff;
+  --a2:      #7eb8ff;
+  --g1:      #4d8fff;
+  --g2:      #1a4fa0;
+  --y:       #e0f0ff;
+  --text:    #f0f8ff;
+  --text2:   rgba(240,248,255,0.6);
+  --text3:   rgba(240,248,255,0.3);
+  --scanline: rgba(0,0,0,0.14);
+}
+
+[data-theme="ember"] {
+  --bg:      #1a0505;
+  --bg2:     #2e0b0b;
+  --bg3:     #4a1010;
+  --surface: #200808;
+  --border:  rgba(255,61,61,0.2);
+  --p1:      #ff3d3d;
+  --p2:      #a00000;
+  --a1:      #ff8c69;
+  --a2:      #ffcc5c;
+  --g1:      #ff3d3d;
+  --g2:      #a00000;
+  --y:       #fff0d0;
+  --text:    #fff5f0;
+  --text2:   rgba(255,245,240,0.6);
+  --text3:   rgba(255,245,240,0.3);
+  --scanline: rgba(0,0,0,0.14);
+}
+
+[data-theme="mint"] {
+  --bg:      #f0faf6;
+  --bg2:     #e0f5ea;
+  --bg3:     #cceedd;
+  --surface: #f8fffc;
+  --border:  rgba(0,179,126,0.2);
+  --p1:      #00b37e;
+  --p2:      #007a55;
+  --a1:      #ff6f91;
+  --a2:      #ff9fb5;
+  --g1:      #00b37e;
+  --g2:      #007a55;
+  --y:       #2d2d2d;
+  --text:    #0f1f18;
+  --text2:   rgba(15,31,24,0.6);
+  --text3:   rgba(15,31,24,0.3);
+  --scanline: rgba(0,0,0,0.03);
+}
+
+[data-theme="goldhour"] {
+  --bg:      #120d00;
+  --bg2:     #221800;
+  --bg3:     #342500;
+  --surface: #170f00;
+  --border:  rgba(255,184,0,0.2);
+  --p1:      #ffb800;
+  --p2:      #8a6000;
+  --a1:      #ff8c00;
+  --a2:      #ffe066;
+  --g1:      #ffb800;
+  --g2:      #8a6000;
+  --y:       #fff8e7;
+  --text:    #fffdf0;
+  --text2:   rgba(255,253,240,0.6);
+  --text3:   rgba(255,253,240,0.3);
+  --scanline: rgba(0,0,0,0.14);
+}
+
+/* ── Kawaii (custom Procreate assets required) ──
+   Replace hex values below once you have your palette.
+   The kawaii-overlay.png in assets/kawaii/ will tile as bg. */
+[data-theme="kawaii"] {
+  --bg:      #1f0d2a;
+  --bg2:     #2e1040;
+  --bg3:     #3c1555;
+  --surface: #261238;
+  --border:  rgba(255,157,226,0.2);
+  --p1:      #ff9de2;
+  --p2:      #d44fb0;
+  --a1:      #b8f0ff;
+  --a2:      #ff9de2;
+  --g1:      #b2ff9e;
+  --g2:      #5dbd40;
+  --y:       #fff3a3;
+  --text:    #fff8ff;
+  --text2:   rgba(255,248,255,0.6);
+  --text3:   rgba(255,248,255,0.35);
+  --scanline: rgba(0,0,0,0.08);
+}
