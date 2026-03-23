@@ -1,6 +1,4 @@
-# nudget
-
-A calm, detailed GTD task manager with habit tracking, events, AI capture, and custom themes.
+# nudget v2 — cloud + offline setup guide
 
 ---
 
@@ -8,149 +6,209 @@ A calm, detailed GTD task manager with habit tracking, events, AI capture, and c
 
 ```
 nudget/
-├── index.html              ← entry point
+├── index.html                          ← entry point (updated for auth + Supabase)
+├── manifest.json                       ← PWA manifest (add to home screen on iOS/Android)
 ├── .gitignore
 ├── README.md
 │
-├── css/
-│   ├── themes.css          ← all colour theme variables
-│   ├── base.css            ← reset, layout, topbar, nav, FAB
-│   ├── components.css      ← reusable UI: cards, tags, forms, buttons
-│   ├── screens.css         ← per-screen styles
-│   └── overlays.css        ← sheet / modal styles
+├── css/                                ← unchanged from v1
+│   ├── themes.css
+│   ├── base.css
+│   ├── components.css
+│   ├── screens.css
+│   └── overlays.css
 │
 ├── js/
-│   ├── config.js           ← API key (DO NOT COMMIT — in .gitignore)
-│   ├── store.js            ← all data, localStorage persistence
-│   ├── ai.js               ← Groq API integration + local fallback
-│   ├── render.js           ← all DOM rendering
-│   └── app.js              ← navigation, event wiring, app controller
+│   ├── config.js      ← Supabase + Groq credentials (DO NOT COMMIT)
+│   ├── db.js          ← all Supabase operations (NEW)
+│   ├── sync.js        ← offline queue + realtime sync (NEW)
+│   ├── store.js       ← in-memory state, reads from IndexedDB cache (UPDATED)
+│   ├── ai.js          ← Groq AI + local fallback (unchanged)
+│   ├── auth.js        ← login/signup screen (NEW)
+│   ├── render.js      ← DOM rendering (copy from v1, update field names)
+│   └── app.js         ← navigation + boot sequence (UPDATED)
 │
-└── assets/
+├── supabase/
+│   ├── migrations/
+│   │   ├── 001_initial_schema.sql     ← run this first in Supabase SQL Editor
+│   │   └── 002_helpers.sql            ← run this second
+│   └── functions/
+│       ├── nudge-checker/index.ts     ← daily cron: checks freq tasks, creates nudges
+│       └── scratch-collapse/index.ts  ← midnight cron: collapses scratch pad
+│
+└── assets/                            ← same as v1
     ├── icons/
-    │   ├── icon-32.png          ← browser tab favicon (32×32)
-    │   ├── fab-icon.png         ← FAB button icon (28×28, white on transparent)
-    │   ├── nudge-icon.png       ← nudge bar icon (20×20)
-    │   ├── empty-state.png      ← empty state illustration (48×48)
-    │   │
-    │   ├── nav-today.png        ← nav bar icons (20×20, white/light)
-    │   ├── nav-inbox.png
-    │   ├── nav-habits.png
-    │   ├── nav-projects.png
-    │   ├── nav-calendar.png
-    │   ├── nav-scratch.png
-    │   ├── nav-dash.png
-    │   │
+    │   ├── icon-32.png
+    │   ├── icon-192.png               ← NEW: needed for PWA / home screen icon
+    │   ├── icon-512.png               ← NEW: needed for PWA splash
+    │   ├── nav-*.png (×7)
     │   ├── events/
-    │   │   ├── birthday.png     ← event type icons (22×22)
-    │   │   ├── anniversary.png
-    │   │   ├── deadline.png
-    │   │   ├── reminder.png
-    │   │   └── other.png
-    │   │
     │   └── habits/
-    │       ├── water.png        ← habit icons (18×18 or 20×20)
-    │       ├── reading.png      ← name these whatever you like,
-    │       ├── run.png          ← then enter the filename when
-    │       ├── supplements.png  ← adding a habit in the app
-    │       ├── meditation.png
-    │       └── ...              ← add as many as you need
-    │
     └── kawaii/
-        ├── theme-preview.png    ← small preview swatch in theme picker (40×28)
-        └── card-pattern.png     ← repeating tile for morning card bg (64×64)
 ```
 
 ---
 
-## Free AI setup (Groq — no credit card)
+## Step 1 — Supabase setup (15 min, free)
 
-1. Go to **https://console.groq.com** and sign up (free).
-2. Click **API Keys** → **Create API Key** → copy it.
-3. Open `js/config.js` and paste your key:
-   ```js
-   const CONFIG = {
-     GROQ_API_KEY: 'gsk_your_key_here',
-     USER_NAME: 'Ketaki',   // shows in morning greeting
-   };
-   ```
-4. Save. The app will now use `llama-3.1-8b-instant` (fast, free).
+1. Go to **supabase.com** → New project (free tier, no card)
+2. Choose a region close to you, set a strong DB password
+3. Wait for project to provision (~2 min)
+4. Go to **SQL Editor** → paste + run `supabase/migrations/001_initial_schema.sql`
+5. Go to **SQL Editor** → paste + run `supabase/migrations/002_helpers.sql`
+6. Go to **Settings → API** → copy:
+   - `Project URL`  →  paste into `CONFIG.SUPABASE_URL` in `js/config.js`
+   - `anon public` key  →  paste into `CONFIG.SUPABASE_ANON_KEY` in `js/config.js`
+7. Go to **Authentication → Providers** → enable **Google** if you want Google sign-in
+   (requires a Google OAuth client ID — optional)
 
-**If you skip this step**, the app still works — it uses a built-in rule-based parser
-that handles common natural language patterns without any API call.
+### Enable Google OAuth (optional)
+1. Go to console.cloud.google.com → New project
+2. APIs & Services → Credentials → Create OAuth 2.0 Client ID
+3. Authorized redirect URIs: `https://YOUR_PROJECT_REF.supabase.co/auth/v1/callback`
+4. Paste the Client ID and Secret into Supabase → Auth → Providers → Google
 
 ---
 
-## Deploying (free)
+## Step 2 — Groq AI setup (2 min, free)
 
-### Option A — Vercel (easiest, recommended)
+1. Go to **console.groq.com** → sign up free (no card)
+2. API Keys → Create new key → copy
+3. Paste into `CONFIG.GROQ_API_KEY` in `js/config.js`
+
+If you skip this, the app still works with the built-in rule-based parser.
+
+---
+
+## Step 3 — Edge functions (cron jobs)
+
+These run on Supabase's servers daily. They handle nudge escalation and scratch pad EOD collapse.
+
+### Deploy functions
+
+```bash
+# Install Supabase CLI
+npm install -g supabase
+
+# Login
+supabase login
+
+# Link to your project
+supabase link --project-ref YOUR_PROJECT_REF
+
+# Deploy both functions
+supabase functions deploy nudge-checker
+supabase functions deploy scratch-collapse
+```
+
+### Set up cron jobs in Supabase Dashboard
+
+Go to **Database → Cron Jobs → New cron job**:
+
+| Name | Schedule | Function |
+|---|---|---|
+| `nudge-checker` | `0 8 * * *` | `nudge-checker` |
+| `scratch-collapse` | `0 0 * * *` | `scratch-collapse` |
+
+---
+
+## Step 4 — Deploy the web app (free)
+
+### Option A — Vercel (recommended)
 ```bash
 npm install -g vercel
 cd nudget
 vercel
 ```
-Done. Vercel gives you a free HTTPS URL.
+Done. Free HTTPS URL. Every `git push` auto-deploys.
 
 ### Option B — Netlify drag-and-drop
-1. Go to https://app.netlify.com
-2. Drag the entire `nudget/` folder into the deploy zone.
-3. Done. Free HTTPS URL instantly.
+1. Go to app.netlify.com
+2. Drag the `nudget/` folder into the deploy zone
+3. Done instantly
 
 ### Option C — GitHub Pages
-1. Push to a public GitHub repo.
-2. Settings → Pages → Source: main branch, / (root).
-3. Available at `https://yourusername.github.io/nudget`.
+1. Push to GitHub (make sure `js/config.js` is in `.gitignore`)
+2. Settings → Pages → Branch: main, folder: / (root)
+3. Add config.js as a Netlify environment variable or inline it in your build step
 
-**Note on config.js:** Because `js/config.js` is in `.gitignore`, it won't be pushed.
-For Vercel/Netlify, either:
-- Upload the file manually after deploy, or
-- Use their environment variable feature and load the key from `window.ENV` instead of a file.
+**Important:** `js/config.js` is in `.gitignore`. On Vercel/Netlify, either:
+- Upload it manually after deploy (via their file manager), or
+- Use environment variables: set `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `GROQ_API_KEY`
+  as env vars in your hosting dashboard, then add a build step that generates config.js:
+  ```bash
+  echo "const CONFIG = { SUPABASE_URL: '$SUPABASE_URL', SUPABASE_ANON_KEY: '$SUPABASE_ANON_KEY', GROQ_API_KEY: '$GROQ_API_KEY', APP_NAME: 'nudget', USER_NAME: '' };" > js/config.js
+  ```
 
 ---
 
-## Asset specs for Procreate
+## Step 5 — Install on phone (PWA)
 
-All assets should be exported from Procreate as **PNG with transparent background**.
-Export at 2× and name the 2× version (the app will use it directly).
+### Android (Chrome)
+1. Open your deployed URL in Chrome
+2. Tap the three-dot menu → "Add to Home screen"
+3. App installs like a native app, offline mode included
 
-| Asset | Size | Notes |
+### iOS (Safari)
+1. Open your deployed URL in Safari
+2. Tap the Share button → "Add to Home Screen"
+3. App icon appears on your home screen
+
+The manifest.json and icon files handle the splash screen and icon automatically.
+You need `icon-192.png` and `icon-512.png` in `assets/icons/` for this to look right.
+
+---
+
+## What works offline
+
+| Feature | Offline | Notes |
 |---|---|---|
-| icon-32.png | 32×32 | Favicon. Simple, readable at tiny size. |
-| fab-icon.png | 28×28 | White on transparent. Will show on coloured FAB button. |
-| nudge-icon.png | 20×20 | Small icon next to nudge text. |
-| empty-state.png | 48×48 | Shown when a list is empty. Can be anything calm. |
-| nav-*.png (×7) | 20×20 | Nav bar icons. **Draw in white** — the CSS filter tints them to the theme colour automatically. |
-| events/birthday.png | 22×22 | Event type icons. Draw on transparent bg. |
-| events/anniversary.png | 22×22 | |
-| events/deadline.png | 22×22 | |
-| events/reminder.png | 22×22 | |
-| events/other.png | 22×22 | |
-| habits/*.png | 18×20 | One per habit type. Name them freely — enter the filename in the app when adding a habit. |
-| kawaii/theme-preview.png | 40×28 | Shown in the theme picker tile. A cute preview swatch. |
-| kawaii/card-pattern.png | 64×64 | **Seamlessly tiling** pixel pattern. Used as morning card background in kawaii theme. |
+| View all tasks | Yes | Loaded from IndexedDB cache |
+| Add tasks | Yes | Queued, syncs on reconnect |
+| Edit tasks / change GTD state | Yes | Queued |
+| Habit check-offs | Yes | Queued |
+| Scratch pad | Yes | Queued |
+| View habits / events / calendar | Yes | From cache |
+| AI task parsing | No | Groq API needs internet |
+| Sync to other devices | No | Needs connection |
+| Login / signup | No | Needs connection |
 
-**Nav icon tip:** Draw all 7 nav icons in white (#FFFFFF) on a transparent canvas.
-The CSS `filter` property converts them to the correct theme colour automatically —
-so one set of white icons works across all 8 themes.
+When offline, a yellow banner appears at the top showing how many changes are queued.
+When you reconnect, the queue flushes automatically and the banner shows "SYNCING..." briefly.
 
 ---
 
-## How data works
+## Asset specs (Procreate)
 
-Everything is saved to `localStorage` under the key `nudget_v1`.
-No server, no account, no sync (yet). Data stays on the device/browser.
+Same as v1, plus two new sizes for PWA:
 
-To reset everything: open browser DevTools → Application → Local Storage →
-delete `nudget_v1`.
+| File | Size | Notes |
+|---|---|---|
+| `icon-32.png` | 32×32 | Browser favicon |
+| `icon-192.png` | 192×192 | PWA home screen icon (Android) |
+| `icon-512.png` | 512×512 | PWA splash / install prompt |
+| All nav icons | 20×20 | White on transparent — CSS tints to theme color |
+| All others | Same as v1 README | |
+
+The 192 and 512 icons should be square, colorful, and readable at both sizes.
+A simple pixel-art "n" or the nudget star glyph works well.
 
 ---
 
-## Kawaii theme
+## Database field name note
 
-The kawaii theme colours are pre-configured. To fully activate it:
-1. Draw and export `assets/kawaii/card-pattern.png` (64×64 seamless tile).
-2. Draw and export `assets/kawaii/theme-preview.png` (40×28 preview).
-3. Select the Kawaii tile in the theme picker — it will apply.
+The Supabase schema uses `snake_case` (e.g. `gtd_state`, `due_date`, `progress_type`).
+The v1 frontend used `camelCase` (e.g. `gtdState`, `dueDate`, `progressType`).
 
-You can also tweak the kawaii colour palette in `css/themes.css`
-under `[data-theme="kawaii"]`.
+In `render.js`, update all field references to match the DB:
+- `task.gtdState`     → `task.gtd_state`
+- `task.dueDate`      → `task.due_date`
+- `task.freqDays`     → `task.freq_days`
+- `task.progressType` → `task.progress_type`
+- `task.progressVal`  → `task.progress_val`
+- `task.progressTarget` → `task.progress_target`
+- `task.progressUnit` → `task.progress_unit`
+- `habit.progressTarget` → `habit.progress_target`
+- `habit.progressUnit`   → `habit.progress_unit`
+- `event.eventDate`   → `event.event_date`
+- `event.type`        → same

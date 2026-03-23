@@ -1,15 +1,21 @@
 /* ═══════════════════════════════════════════════════
-   NUDGET — OVERLAYS & SHEETS
+   NUDGET — OVERLAYS & SHEETS  (GitHub Pages safe)
+   Overlays are direct body children in HTML,
+   so they stack in the body's context at z-index 100+,
+   which is above #app (z:2) and the FAB (z:50).
 ═══════════════════════════════════════════════════ */
 
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.72);
+  background: rgba(0, 0, 0, 0.72);
+  /* 100 — above app (2), FAB (50), below toast (999) */
   z-index: 100;
   display: none;
   align-items: flex-end;
   justify-content: center;
+  /* Backdrop itself receives clicks to dismiss */
+  cursor: pointer;
 }
 .overlay.open { display: flex; }
 
@@ -20,7 +26,11 @@
   border-top: 2px solid var(--p1);
   max-height: 90vh;
   overflow-y: auto;
-  animation: slideUp 0.28s cubic-bezier(0.4,0,0.2,1);
+  animation: slideUp 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  /* Sheet is above its overlay backdrop */
+  position: relative;
+  z-index: 101;
+  cursor: default;   /* reset from overlay's cursor:pointer */
 }
 .sheet::-webkit-scrollbar { width: 3px; }
 .sheet::-webkit-scrollbar-thumb { background: var(--p2); }
@@ -66,7 +76,54 @@
 
 .sheet-body { padding: 16px; }
 
-/* ── AI capture styles ── */
+/* ── Task detail overlay (full-screen, not a sheet) ── */
+.detail-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--bg2);
+  /* Above regular overlays */
+  z-index: 200;
+  display: none;
+  flex-direction: column;
+  max-width: 420px;
+  margin: 0 auto;
+}
+.detail-overlay.open { display: flex; }
+
+.detail-topbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.detail-back {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text2);
+  padding: 6px 10px;
+  font-family: var(--font-pixel);
+  font-size: 7px;
+  cursor: pointer;
+  transition: all 0.15s;
+  letter-spacing: 0.05em;
+}
+.detail-back:hover { border-color: var(--p1); color: var(--p1); }
+.detail-title {
+  flex: 1;
+  font-family: var(--font-pixel);
+  font-size: 7px;
+  color: var(--p1);
+  letter-spacing: 0.05em;
+}
+.detail-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+/* ── AI capture ── */
 .ai-chat-messages {
   max-height: 180px;
   overflow-y: auto;
@@ -155,4 +212,39 @@
   font-size: 16px;
   color: #ff6060;
   line-height: 1.4;
+}
+
+/* ── Auth screen (shown before login) ── */
+#auth-screen {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  /* Above everything — user must log in first */
+  z-index: 500;
+  gap: 0;
+}
+
+/* ── Offline banner (injected by sync.js) ── */
+#offline-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  /* Above app (2), below overlays (100) */
+  z-index: 60;
+  font-family: var(--font-pixel);
+  font-size: 6px;
+  letter-spacing: 0.08em;
+  text-align: center;
+  padding: 6px;
+  transition: all 0.3s;
+  max-width: 420px;
+  margin: 0 auto;
+  /* Must not eat clicks below it */
+  pointer-events: none;
 }
